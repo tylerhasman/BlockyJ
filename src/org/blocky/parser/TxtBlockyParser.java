@@ -31,32 +31,23 @@ public class TxtBlockyParser implements BlockyParser {
         }
     }
 
-    private Block parseLiteral(BlockyEngine blockyEngine, StringTokenizer stringTokenizer) throws CompilerException {
+    private Block parseLiteral(BlockyEngine blockyEngine, Tokenizer stringTokenizer) throws CompilerException {
 
-        String token = stringTokenizer.nextToken("\n");
+        String token = stringTokenizer.nextToken(1);
 
-        while (token.startsWith(" "))
-            token = token.substring(1);
-
-        if(token.charAt(0) == '"'){
-
-            String string = "";
-
-            for(int i = 1; i < token.length();i++){
-                char c = token.charAt(i);
-
-                if(c == '"')
-                    break;
-
-                string += c;
-
-            }
+        if(token.charAt(0) == '"') {
+            String string = stringTokenizer.nextToken('"');
 
             return new BlockPushNative(string);
+        }else if(Character.isDigit(token.charAt(0))) {
+
+            int number = Integer.parseInt(token + stringTokenizer.nextToken(';'));
+
+            return new BlockPushNative(number);
         }else{
             BlockFunction blockFunction = new BlockFunction(new Scope());
 
-            blockFunction.addBlock(new BlockPushNative(token));
+            blockFunction.addBlock(new BlockPushNative(token + stringTokenizer.nextToken(';')));
             blockFunction.addBlock(new BlockGetVariable(blockyEngine.getScope()));
 
             return blockFunction;
@@ -68,16 +59,16 @@ public class TxtBlockyParser implements BlockyParser {
     @Override
     public BlockyEngine parse() throws CompilerException {
 
-        StringTokenizer stringTokenizer = new StringTokenizer(text, " ");
+        Tokenizer stringTokenizer = new Tokenizer(text);
 
         BlockyEngine blockyEngine = new BlockyEngine();
 
         while(stringTokenizer.hasMoreTokens()){
 
-            String cmd = stringTokenizer.nextToken(" ");
+            String cmd = stringTokenizer.nextToken(' ');
 
-            while(cmd.startsWith("\n"))
-                cmd = cmd.substring(1);
+            if(cmd.isEmpty())
+                continue;
 
             if(cmd.equals("print")) {
 
@@ -86,9 +77,10 @@ public class TxtBlockyParser implements BlockyParser {
                 blockyEngine.addBlock(parseLiteral(blockyEngine, stringTokenizer));
                 blockyEngine.addBlock(new BlockPushNative(1));
                 blockyEngine.addBlock(blockPrintOut);
+
             }else if(cmd.equals("set")){
 
-                String variableName = stringTokenizer.nextToken(" ");
+                String variableName = stringTokenizer.nextToken(' ');
 
                 Block block = parseLiteral(blockyEngine, stringTokenizer);
 

@@ -1,3 +1,2 @@
-set text "Hello World1233 I love cheese!! Woo hoo !!"
-
-print text
+set number "Hello World";
+print number;
