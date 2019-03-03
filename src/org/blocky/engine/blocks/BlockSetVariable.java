@@ -20,6 +20,8 @@ public class BlockSetVariable extends ScopeBlock{
             throw new IllegalStateException("Cannot set a variable to a block. "+val.getClass().getName());
         }
 
+        //System.out.println("Set variable '"+variableName+"' to "+val);
+
         getScope().setValue(variableName, val);
 
     }

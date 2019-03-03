@@ -15,8 +15,8 @@ public class BlockCompare extends Block {
     @Override
     public void execute(Stack stack) {
 
-        int i = stack.pop();
         int j = stack.pop();
+        int i = stack.pop();
 
         if(type == TYPE_EQUALS){
             stack.push(i == j);

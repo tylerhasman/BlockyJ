@@ -11,6 +11,10 @@ public class Tokenizer {
         index = 0;
     }
 
+    public String getString() {
+        return string;
+    }
+
     public boolean hasMoreTokens(){
         return index < string.length();
     }
@@ -26,6 +30,17 @@ public class Tokenizer {
         String sub = peek(width);
 
         index += width;
+
+        return sub;
+    }
+
+    public String nextTokenSkipWhitespace(){
+        String sub = peek(1);
+        while(sub.equals(" ") || sub.equals("\t")){
+            index++;
+            sub = peek(1);
+        }
+        index++;
 
         return sub;
     }
@@ -50,6 +65,28 @@ public class Tokenizer {
         String sub = string.substring(index, index + width);
 
         return sub;
+    }
+
+    public String peekIfPossible(int width){
+        if(index + width > string.length())
+            return "";
+
+        String sub = string.substring(index, index + width);
+
+        return sub;
+    }
+
+    public String nextWord(){
+        String num = "";
+
+        for(int i = index;i < string.length();i++){
+            if(!Character.isAlphabetic(string.charAt(i)))
+                break;
+            num += string.charAt(i);
+            index++;
+        }
+
+        return num;
     }
 
     public String nextToken(char until){

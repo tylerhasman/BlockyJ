@@ -1,0 +1,6 @@
+
+function add(one, two);
+   return one + two;
+end;
+
+print add(5, 10) + add(100, 50);

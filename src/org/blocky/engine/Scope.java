@@ -18,6 +18,14 @@ public class Scope {
         values = new HashMap<>();
     }
 
+    @Override
+    public String toString() {
+        if(parent != null){
+            return parent.toString() + values.toString();
+        }
+        return values.toString();
+    }
+
     public void setValue(String key, Object value){
         values.put(key, value);
     }

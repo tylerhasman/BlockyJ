@@ -13,7 +13,17 @@ public class Stack {
         stack = new ArrayList<>();
     }
 
+    public <T> T peek(){
+        if(stack.isEmpty()){
+            throw new IllegalStateException("Cannot peek stack when it is empty!");
+        }
+
+        return (T) stack.get(stack.size() - 1);
+    }
+
     public void push(Object object){
+        if(object == null)
+            throw new IllegalArgumentException("Cannot push null to stack");
         stack.add(object);
     }
 

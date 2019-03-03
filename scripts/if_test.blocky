@@ -1,0 +1,16 @@
+
+number = 15;
+
+if number > 4;
+    print number + " is greater than 4";
+end;
+
+if number > 3;
+    print number + " is greater than 3";
+end;
+
+if number > 6;
+   print number + " is greater than 6";
+else;
+   print number + " is NOT greater than 6";
+end;

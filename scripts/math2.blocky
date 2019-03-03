@@ -4,6 +4,9 @@ div = 50 / 10;
 mult = 5 * 10;
 
 order1 = 50 + 5 * 2;
+order2 = 50 * 2 + 5;
+order3 = 50 * 2 / 10;
+order4 = 50 * 2 / 10 + 5 - 10;
 
 print add;
 print sub;
@@ -11,3 +14,6 @@ print div;
 print mult;
 print "";
 print order1;
+print order2;
+print order3;
+print order4;

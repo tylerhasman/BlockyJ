@@ -15,4 +15,8 @@ public class BlockyEngine extends BlockFunction {
         execute(stack);
     }
 
+    public void printOutCompiledCode(){
+        printBlock(blocks, 0);
+    }
+
 }

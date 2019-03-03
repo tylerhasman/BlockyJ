@@ -2,11 +2,12 @@ package org.blocky.parser;
 
 import org.blocky.engine.BlockyEngine;
 import org.blocky.engine.Scope;
+import org.blocky.engine.Stack;
 import org.blocky.engine.blocks.*;
 import org.blocky.exception.CompilerException;
 
 import java.io.*;
-import java.util.StringTokenizer;
+import java.util.Arrays;
 
 public class TxtBlockyParser implements BlockyParser {
 
@@ -33,79 +34,23 @@ public class TxtBlockyParser implements BlockyParser {
 
     private void parseMath(Tokenizer tokenizer, BlockFunction top){
 
-        while(tokenizer.hasMoreTokens()){
+        ExpressionTree expressionTree = new ExpressionTree(tokenizer);
 
-            String c = tokenizer.nextToken(1);
-
-            if(c.isEmpty() || c.equals(" "))
-                continue;
-
-            if(c.equals("(")){
-                BlockFunction bracket = new BlockFunction(top.getScope());
-
-                parseMath(tokenizer, bracket);
-
-                top.addBlock(bracket);
-            }else if(c.equals(")")){
-                break;
-            }else if(c.equals("+") || c.equals("-")) {
-
-                BlockFunction afterPlus = new BlockFunction(top.getScope());
-                parseMath(tokenizer, afterPlus);
-                top.addBlock(afterPlus);
-
-                if (c.equals("+"))
-                    top.addBlock(new BlockMath(BlockMath.TYPE_ADD));
-                else
-                    top.addBlock(new BlockMath(BlockMath.TYPE_SUB));
-
-            }else if(c.equals("*") || c.equals("/")){
-
-                BlockFunction blockFunction = new BlockFunction(top.getScope());
-
-                String numStr = tokenizer.nextNumber();
-                int number = Integer.parseInt(numStr);
-
-                top.addBlock(new BlockPushNative(number));
-
-                if (c.equals("*"))
-                    top.addBlock(new BlockMath(BlockMath.TYPE_MULT));
-                else
-                    top.addBlock(new BlockMath(BlockMath.TYPE_DIV));
-
-            }else if(Character.isDigit(c.charAt(0))){
-                String numStr = c + tokenizer.nextNumber();
-                int number = Integer.parseInt(numStr);
-
-                top.addBlock(new BlockPushNative(number));
-            }else if(Character.isAlphabetic(c.charAt(0))){
-                String varName = c + tokenizer.nextToken(' ');
-
-                top.addBlock(new BlockPushNative(varName));
-                top.addBlock(new BlockGetVariable(top.getScope()));
-            }
-
-        }
+        top.addBlock(expressionTree.eval(top.getScope()));
 
     }
 
-    private Block parseLiteral(BlockyEngine blockyEngine, Tokenizer stringTokenizer) throws CompilerException {
+    private Block parseLiteral(Scope scope, Tokenizer stringTokenizer) throws CompilerException {
 
-        String token = stringTokenizer.nextToken(1);
+        String token = stringTokenizer.nextTokenSkipWhitespace();
 
-        if(token.charAt(0) == '"') {
-            String string = stringTokenizer.nextToken('"');
+        BlockFunction math = new BlockFunction(scope);
 
-            return new BlockPushNative(string);
-        }else{
-            BlockFunction math = new BlockFunction(blockyEngine.getScope());
+        String equation = token + stringTokenizer.nextToken(';');
 
-            String equation = token + stringTokenizer.nextToken(';');
+        parseMath(new Tokenizer(equation), math);
 
-            parseMath(new Tokenizer(equation.replace(" ", "")), math);
-
-            return math;
-        }
+        return math;
 
 
     }
@@ -119,37 +64,104 @@ public class TxtBlockyParser implements BlockyParser {
 
         int line = 1;
 
+        Stack functionStack = new Stack();
+        functionStack.push(blockyEngine);
+
         try{
             while(stringTokenizer.hasMoreTokens()){
 
+                BlockFunction currentFunction = functionStack.peek();
+
                 String cmd = stringTokenizer.peek(1);
 
-                if(cmd.isEmpty() || cmd.equals("\n") || cmd.equals(";")) {
+                if(cmd.isEmpty() || cmd.equals("\n") || cmd.equals(";") || cmd.equals(" ")) {
                     stringTokenizer.skip(1);
                     if(cmd.equals("\n"))
                         line++;
                     continue;
                 }
 
-                cmd = stringTokenizer.nextToken(' ');
+                cmd = stringTokenizer.nextWord();
 
                 if(cmd.equals("print")) {
 
                     BlockPrintOut blockPrintOut = new BlockPrintOut();
 
-                    blockyEngine.addBlock(parseLiteral(blockyEngine, stringTokenizer));
-                    blockyEngine.addBlock(new BlockPushNative(1));
-                    blockyEngine.addBlock(blockPrintOut);
+                    currentFunction.addBlock(parseLiteral(currentFunction.getScope(), stringTokenizer));
+                    currentFunction.addBlock(new BlockPushNative(1));
+                    currentFunction.addBlock(blockPrintOut);
+                }else if(cmd.equals("if")) {
+
+                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer);
+
+                    currentFunction.addBlock(condition);
+
+                    BlockIf blockIf = new BlockIf(currentFunction.getScope());
+
+                    functionStack.push(blockIf);
+
+                }else if(cmd.equals("else")) {
+
+                    BlockIf currentIf = functionStack.pop();
+                    currentIf.introduceElse();
+
+                    currentFunction = functionStack.peek();
+
+                    currentFunction.addBlock(currentIf);
+
+                    BlockIf blockIf = new BlockIf(currentFunction.getScope());
+
+                    functionStack.push(blockIf);
+                }else if(cmd.equals("return")){
+
+                    currentFunction.addBlock(parseLiteral(currentFunction.getScope(), stringTokenizer));
+
+                }else if(cmd.equals("end")) {
+
+                    BlockFunction function = functionStack.pop();
+
+                    if (function instanceof BlockyEngine) {
+                        throw new CompilerException("Cannot pop context outside of this scope");
+                    }
+
+                    if(function instanceof BlockDefinedFunction){
+                        BlockFunction parent = functionStack.peek();
+
+                        parent.getScope().setValue(((BlockDefinedFunction) function).getName(), function);
+                    }else{
+                        BlockFunction parent = functionStack.peek();
+
+                        parent.addBlock(function);
+                    }
+
+                }else if(cmd.equals("function")){
+
+                    stringTokenizer.skip(1);
+                    String funcName = stringTokenizer.nextWord();
+
+                    stringTokenizer.skip(1);
+
+                    String[] header = stringTokenizer.nextToken(')').replace(" ", "").split(",");
+
+                    BlockDefinedFunction function = new BlockDefinedFunction(currentFunction.getScope(), funcName, header);
+
+                    functionStack.push(function);
 
                 }else if(Character.isAlphabetic(cmd.charAt(0))){//Variable declaration
 
                     String variableName = cmd;
 
-                    Block block = parseLiteral(blockyEngine, stringTokenizer);
+                    String operation = stringTokenizer.nextTokenSkipWhitespace();
 
-                    blockyEngine.addBlock(block);
-                    blockyEngine.addBlock(new BlockPushNative(variableName));
-                    blockyEngine.addBlock(new BlockSetVariable(blockyEngine.getScope()));
+                    if(operation.equals("=")){
+                        Block block = parseLiteral(currentFunction.getScope(), stringTokenizer);
+
+                        currentFunction.addBlock(block);
+                        currentFunction.addBlock(new BlockPushNative(variableName));
+                        currentFunction.addBlock(new BlockSetVariable(currentFunction.getScope()));
+                    }else{
+                        throw new CompilerException("Unknown assignement operation "+operation);
+                    }
 
                 }else{
                     throw new CompilerException("Unexpected token '"+cmd+"'");
@@ -166,13 +178,25 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/add.blocky");
+        File file = new File("scripts/function.blocky");
+
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);
 
+        long time = System.currentTimeMillis();
+
         BlockyEngine engine = txtBlockyParser.parse();
 
+        System.out.println("Compiled in "+(System.currentTimeMillis() - time)+"ms");
+
+        engine.printOutCompiledCode();
+
+        time = System.currentTimeMillis();
+
         engine.run();
+
+        System.out.println("Ran in "+(System.currentTimeMillis() - time)+"ms");
+
     }
 
 }
