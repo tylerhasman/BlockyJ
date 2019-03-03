@@ -48,19 +48,29 @@ public class TxtBlockyParser implements BlockyParser {
                 top.addBlock(bracket);
             }else if(c.equals(")")){
                 break;
-            }else if(c.equals("+") || c.equals("-") || c.equals("*") || c.equals("/")){
+            }else if(c.equals("+") || c.equals("-")) {
 
                 BlockFunction afterPlus = new BlockFunction(top.getScope());
                 parseMath(tokenizer, afterPlus);
                 top.addBlock(afterPlus);
 
-                if(c.equals("+"))
+                if (c.equals("+"))
                     top.addBlock(new BlockMath(BlockMath.TYPE_ADD));
-                else if(c.equals("-"))
+                else
                     top.addBlock(new BlockMath(BlockMath.TYPE_SUB));
-                else if(c.equals("*"))
+
+            }else if(c.equals("*") || c.equals("/")){
+
+                BlockFunction blockFunction = new BlockFunction(top.getScope());
+
+                String numStr = tokenizer.nextNumber();
+                int number = Integer.parseInt(numStr);
+
+                top.addBlock(new BlockPushNative(number));
+
+                if (c.equals("*"))
                     top.addBlock(new BlockMath(BlockMath.TYPE_MULT));
-                else if(c.equals("/"))
+                else
                     top.addBlock(new BlockMath(BlockMath.TYPE_DIV));
 
             }else if(Character.isDigit(c.charAt(0))){
@@ -92,7 +102,7 @@ public class TxtBlockyParser implements BlockyParser {
 
             String equation = token + stringTokenizer.nextToken(';');
 
-            parseMath(new Tokenizer(equation), math);
+            parseMath(new Tokenizer(equation.replace(" ", "")), math);
 
             return math;
         }
@@ -107,46 +117,56 @@ public class TxtBlockyParser implements BlockyParser {
 
         BlockyEngine blockyEngine = new BlockyEngine();
 
-        while(stringTokenizer.hasMoreTokens()){
+        int line = 1;
 
-            String cmd = stringTokenizer.peek(1);
+        try{
+            while(stringTokenizer.hasMoreTokens()){
 
-            if(cmd.isEmpty() || cmd.equals("\n") || cmd.equals(";")) {
-                stringTokenizer.skip(1);
-                continue;
+                String cmd = stringTokenizer.peek(1);
+
+                if(cmd.isEmpty() || cmd.equals("\n") || cmd.equals(";")) {
+                    stringTokenizer.skip(1);
+                    if(cmd.equals("\n"))
+                        line++;
+                    continue;
+                }
+
+                cmd = stringTokenizer.nextToken(' ');
+
+                if(cmd.equals("print")) {
+
+                    BlockPrintOut blockPrintOut = new BlockPrintOut();
+
+                    blockyEngine.addBlock(parseLiteral(blockyEngine, stringTokenizer));
+                    blockyEngine.addBlock(new BlockPushNative(1));
+                    blockyEngine.addBlock(blockPrintOut);
+
+                }else if(Character.isAlphabetic(cmd.charAt(0))){//Variable declaration
+
+                    String variableName = cmd;
+
+                    Block block = parseLiteral(blockyEngine, stringTokenizer);
+
+                    blockyEngine.addBlock(block);
+                    blockyEngine.addBlock(new BlockPushNative(variableName));
+                    blockyEngine.addBlock(new BlockSetVariable(blockyEngine.getScope()));
+
+                }else{
+                    throw new CompilerException("Unexpected token '"+cmd+"'");
+                }
+
             }
-
-            cmd = stringTokenizer.nextToken(' ');
-
-            if(cmd.equals("print")) {
-
-                BlockPrintOut blockPrintOut = new BlockPrintOut();
-
-                blockyEngine.addBlock(parseLiteral(blockyEngine, stringTokenizer));
-                blockyEngine.addBlock(new BlockPushNative(1));
-                blockyEngine.addBlock(blockPrintOut);
-
-            }else if(Character.isAlphabetic(cmd.charAt(0))){//Variable declaration
-
-                String variableName = cmd;
-
-                Block block = parseLiteral(blockyEngine, stringTokenizer);
-
-                blockyEngine.addBlock(block);
-                blockyEngine.addBlock(new BlockPushNative(variableName));
-                blockyEngine.addBlock(new BlockSetVariable(blockyEngine.getScope()));
-
-            }else{
-                throw new CompilerException("Unexpected token '"+cmd+"'");
-            }
-
+        }catch(Exception e){
+            System.err.println("Error on line "+line);
+            throw new CompilerException(e);
         }
+
 
         return blockyEngine;
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/math.blocky");
+        File file = new File("scripts/add.blocky");
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);
 

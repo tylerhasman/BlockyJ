@@ -19,12 +19,30 @@ public class BlockFunction extends ScopeBlock{
         blocks.add(block);
     }
 
+    private void printBlock(List<Block> blocks, int tabs){
+        String t = "";
+        for(int i = 0; i < tabs;i++){
+            t += "\t";
+        }
+        for(Block block : blocks){
+            if(block instanceof BlockPushNative){
+                System.out.println(t + block.getClass().getSimpleName().replace("Block", "")+" ("+((BlockPushNative) block).getObj().toString()+")");
+            }else if(block instanceof BlockFunction){
+                printBlock(((BlockFunction) block).blocks, ++tabs);
+            }else{
+                System.out.println(t + block.getClass().getSimpleName().replace("Block", ""));
+            }
+        }
+    }
+
     @Override
     public void execute(Stack stack) throws Exception {
 
-        for(Block block : blocks){
+        printBlock(blocks, 0);
+
+        /*for(Block block : blocks){
             block.execute(stack);
-        }
+        }*/
 
     }
 

@@ -10,6 +10,10 @@ public class BlockPushNative extends Block {
         this.obj = obj;
     }
 
+    public Object getObj() {
+        return obj;
+    }
+
     @Override
     public void execute(Stack stack) throws Exception {
         stack.push(obj);
