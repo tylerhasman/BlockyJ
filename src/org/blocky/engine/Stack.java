@@ -21,7 +21,9 @@ public class Stack {
         if(stack.isEmpty()){
             throw new IllegalStateException("Cannot pop stack when it is empty!");
         }
-        return (T) stack.remove(stack.size()-1);
+        T t = (T) stack.remove(stack.size()-1);
+
+        return t;
     }
 
 }

@@ -31,6 +31,54 @@ public class TxtBlockyParser implements BlockyParser {
         }
     }
 
+    private void parseMath(Tokenizer tokenizer, BlockFunction top){
+
+        while(tokenizer.hasMoreTokens()){
+
+            String c = tokenizer.nextToken(1);
+
+            if(c.isEmpty() || c.equals(" "))
+                continue;
+
+            if(c.equals("(")){
+                BlockFunction bracket = new BlockFunction(top.getScope());
+
+                parseMath(tokenizer, bracket);
+
+                top.addBlock(bracket);
+            }else if(c.equals(")")){
+                break;
+            }else if(c.equals("+") || c.equals("-") || c.equals("*") || c.equals("/")){
+
+                BlockFunction afterPlus = new BlockFunction(top.getScope());
+                parseMath(tokenizer, afterPlus);
+                top.addBlock(afterPlus);
+
+                if(c.equals("+"))
+                    top.addBlock(new BlockMath(BlockMath.TYPE_ADD));
+                else if(c.equals("-"))
+                    top.addBlock(new BlockMath(BlockMath.TYPE_SUB));
+                else if(c.equals("*"))
+                    top.addBlock(new BlockMath(BlockMath.TYPE_MULT));
+                else if(c.equals("/"))
+                    top.addBlock(new BlockMath(BlockMath.TYPE_DIV));
+
+            }else if(Character.isDigit(c.charAt(0))){
+                String numStr = c + tokenizer.nextNumber();
+                int number = Integer.parseInt(numStr);
+
+                top.addBlock(new BlockPushNative(number));
+            }else if(Character.isAlphabetic(c.charAt(0))){
+                String varName = c + tokenizer.nextToken(' ');
+
+                top.addBlock(new BlockPushNative(varName));
+                top.addBlock(new BlockGetVariable(top.getScope()));
+            }
+
+        }
+
+    }
+
     private Block parseLiteral(BlockyEngine blockyEngine, Tokenizer stringTokenizer) throws CompilerException {
 
         String token = stringTokenizer.nextToken(1);
@@ -39,18 +87,14 @@ public class TxtBlockyParser implements BlockyParser {
             String string = stringTokenizer.nextToken('"');
 
             return new BlockPushNative(string);
-        }else if(Character.isDigit(token.charAt(0))) {
-
-            int number = Integer.parseInt(token + stringTokenizer.nextToken(';'));
-
-            return new BlockPushNative(number);
         }else{
-            BlockFunction blockFunction = new BlockFunction(new Scope());
+            BlockFunction math = new BlockFunction(blockyEngine.getScope());
 
-            blockFunction.addBlock(new BlockPushNative(token + stringTokenizer.nextToken(';')));
-            blockFunction.addBlock(new BlockGetVariable(blockyEngine.getScope()));
+            String equation = token + stringTokenizer.nextToken(';');
 
-            return blockFunction;
+            parseMath(new Tokenizer(equation), math);
+
+            return math;
         }
 
 
@@ -65,10 +109,14 @@ public class TxtBlockyParser implements BlockyParser {
 
         while(stringTokenizer.hasMoreTokens()){
 
-            String cmd = stringTokenizer.nextToken(' ');
+            String cmd = stringTokenizer.peek(1);
 
-            if(cmd.isEmpty())
+            if(cmd.isEmpty() || cmd.equals("\n") || cmd.equals(";")) {
+                stringTokenizer.skip(1);
                 continue;
+            }
+
+            cmd = stringTokenizer.nextToken(' ');
 
             if(cmd.equals("print")) {
 
@@ -78,9 +126,9 @@ public class TxtBlockyParser implements BlockyParser {
                 blockyEngine.addBlock(new BlockPushNative(1));
                 blockyEngine.addBlock(blockPrintOut);
 
-            }else if(cmd.equals("set")){
+            }else if(Character.isAlphabetic(cmd.charAt(0))){//Variable declaration
 
-                String variableName = stringTokenizer.nextToken(' ');
+                String variableName = cmd;
 
                 Block block = parseLiteral(blockyEngine, stringTokenizer);
 
@@ -98,7 +146,7 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/hello_world.blocky");
+        File file = new File("scripts/math.blocky");
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);
 

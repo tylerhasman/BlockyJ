@@ -1,0 +1,21 @@
+add = -5;
+sub = 50 - 5;
+div = 50 / 10;
+mult = 5 * 10;
+
+order1 = 50 + 5 * 2;
+order2 = 50 * 2 + 5;
+order3 = 50 * 2 / 10;
+order4 = 50 * 2 / 10 + 5 - 10;
+order5 = ((1000 / ((50 + 5) * 2)) - 15) * 2;
+
+print add;
+print sub;
+print div;
+print mult;
+print "";
+print order1;
+print order2;
+print order3;
+print order4;
+print order5;

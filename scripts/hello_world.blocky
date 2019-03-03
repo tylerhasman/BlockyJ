@@ -1,2 +1,2 @@
-set number "Hello World";
-print number;
+string = "Hello World";
+print string;

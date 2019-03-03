@@ -21,11 +21,11 @@ public class BlockMath extends Block {
         if(type == TYPE_ADD){
             stack.push(one + two);
         }else if(type == TYPE_SUB){
-            stack.push(one - two);
+            stack.push(two - one);
         }else if(type == TYPE_MULT){
             stack.push(one  * two);
         }else if(type == TYPE_DIV){
-            stack.push(one / two);
+            stack.push(two / one);
         }else{
             throw new IllegalArgumentException("Unknown arithmetic type "+type);
         }
