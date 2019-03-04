@@ -1,4 +1,10 @@
 
-string = 2 + 1 + "Test";
+function add(one, two):
+
+   return one + two;
+
+end;
+
+string = ((30 + 2) * 10) . "Number ";
 
 print(string);

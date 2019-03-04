@@ -16,13 +16,17 @@ public class ExpressionTree {
 
     public ExpressionTree(Tokenizer tokenizer){
         root = parse(tokenizer);
+        BTreePrinter.printNode(root);
         fixOrder(root);
+        BTreePrinter.printNode(root);
     }
 
     private int precedent(String op){
         if(op.equals("*") || op.equals("/"))
-            return 2;
+            return 3;
         if(op.equals("+") || op.equals("-"))
+            return 2;
+        if(op.equals("."))
             return 1;
         if(op.equals(">") || op.equals("<") || op.equals("!"))
             return 0;
@@ -35,6 +39,7 @@ public class ExpressionTree {
 
             int precedent = precedent(root.value);
 
+
             //The right side of the tree always branches out while the left is leafs
             if(!right.isLeaf()){
                 fixOrder(right);
@@ -44,11 +49,18 @@ public class ExpressionTree {
             }
 
         }
+
+        root.updateSupers();
     }
+
+
 
     private void swap(ExpressionTreeNode parent, ExpressionTreeNode child){
 
         String precedentOp = parent.value;
+
+        if(parent.right.left.value.startsWith("s"))
+            precedentOp = ".";
 
         ExpressionTreeNode oldRight = child.right;
 
@@ -76,7 +88,7 @@ public class ExpressionTree {
 
                     String name = token + tokenizer.nextWord();
 
-                    if(tokenizer.peekIfPossible(1).equals("(")){//Function
+                    if (tokenizer.peekIfPossible(1).equals("(")) {//Function
 
                         tokenizer.skip(1);
 
@@ -84,32 +96,54 @@ public class ExpressionTree {
 
                         String inBrackets = "";
 
-                        while(openBrackets > 0){
+                        while (openBrackets > 0) {
 
                             String withinToken = tokenizer.nextToken(1);
 
-                            if(withinToken.equals("(")){
+                            if (withinToken.equals("(")) {
                                 openBrackets++;
-                            }else if(withinToken.equals(")")){
+                            } else if (withinToken.equals(")")) {
                                 openBrackets--;
                             }
 
                             inBrackets += withinToken;
                         }
 
-                        inBrackets = inBrackets.substring(0, inBrackets.length()-1);
+                        inBrackets = inBrackets.substring(0, inBrackets.length() - 1);
 
-                        ExpressionTreeNode expression = new ExpressionTreeNode("f"+name+"_"+inBrackets, null, null);
+                        ExpressionTreeNode expression = new ExpressionTreeNode("f" + name + "_" + inBrackets, null, null);
 
                         stack.push(expression);
 
-                    }else{
-                        ExpressionTreeNode expression = new ExpressionTreeNode("v"+name, null, null);
+                    } else {
+                        ExpressionTreeNode expression = new ExpressionTreeNode("v" + name, null, null);
 
                         stack.push(expression);
                     }
 
+                }else if(token.charAt(0) == '('){
+                    int openBrackets = 1;
 
+                    String inBrackets = "";
+
+                    while (openBrackets > 0) {
+
+                        String withinToken = tokenizer.nextToken(1);
+
+                        if (withinToken.equals("(")) {
+                            openBrackets++;
+                        } else if (withinToken.equals(")")) {
+                            openBrackets--;
+                        }
+
+                        inBrackets += withinToken;
+                    }
+
+                    inBrackets = inBrackets.substring(0, inBrackets.length() - 1);
+
+                    ExpressionTreeNode expression = new ExpressionTreeNode("b" + inBrackets, null, null);
+
+                    stack.push(expression);
                 }else if(Character.isDigit(token.charAt(0))) {
                     ExpressionTreeNode node = new ExpressionTreeNode("i"+token + tokenizer.nextNumber(), null, null);
 
@@ -159,6 +193,10 @@ public class ExpressionTree {
                 block.addBlock(new BlockPushNative(Integer.parseInt(value)));
             }else if(op == 's') {
                 block.addBlock(new BlockPushNative(value));
+            }else if(op == 'b'){
+                ExpressionTree expressionTree = new ExpressionTree(new Tokenizer(value));
+
+                block.addBlock(expressionTree.eval(scope));
             }else if(op == 'f'){
 
                 String[] funcParts = value.split("_", 2);
@@ -214,17 +252,22 @@ public class ExpressionTree {
 
             BlockFunction val = new BlockFunction(null);
 
-            val.addBlock(new BlockPushNative(left));
-            val.addBlock(new BlockRunFunction());
-            val.addBlock(new BlockPushNative(right));
-            val.addBlock(new BlockRunFunction());
+            if(op.equals(".")){
+                val.addBlock(new BlockPushNative(left));
+                val.addBlock(new BlockRunFunction());
+                val.addBlock(new BlockPushNative(right));
+                val.addBlock(new BlockRunFunction());
+            }else{
+                val.addBlock(new BlockPushNative(left));
+                val.addBlock(new BlockRunFunction());
+                val.addBlock(new BlockPushNative(right));
+                val.addBlock(new BlockRunFunction());
+            }
+
+
 
             if(op.equals("+")){
-                if(!node.left.value.startsWith("i") || !node.right.value.startsWith("i")){
-                    val.addBlock(new BlockStringConcat());
-                }else{
-                    val.addBlock(new BlockMath(BlockMath.TYPE_ADD));
-                }
+                val.addBlock(new BlockMath(BlockMath.TYPE_ADD));
             }else if(op.equals("-")){
                 val.addBlock(new BlockMath(BlockMath.TYPE_SUB));
             }else if(op.equals("*")){
@@ -235,8 +278,10 @@ public class ExpressionTree {
                 val.addBlock(new BlockCompare(BlockCompare.TYPE_GT));
             }else if(op.equals("<")) {
                 val.addBlock(new BlockCompare(BlockCompare.TYPE_LT));
-            }else if(op.equals("!")){
+            }else if(op.equals("!")) {
                 val.addBlock(new BlockCompare(BlockCompare.TYPE_NOT_EQUALS));
+            }else if(op.equals(".")){
+                val.addBlock(new BlockStringConcat());
             }else{
                 throw new IllegalStateException("Unknown op "+op);
             }
@@ -304,11 +349,11 @@ public class ExpressionTree {
     }
 
     private static boolean isOperator(char c){
-        return c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!';
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!' || c == '.';
     }
 
     public static void main(String[] args){
-        String equation = "2 + 1 + \"Test\"";
+        String equation = "5 + 6 . \"Hello\" . 5";
 
         ExpressionTree node = new ExpressionTree(new Tokenizer(equation));
 

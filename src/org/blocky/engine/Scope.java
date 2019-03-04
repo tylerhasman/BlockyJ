@@ -7,7 +7,7 @@ public class Scope {
 
     private Scope parent;
 
-    private Map<String, Object> values;
+    protected Map<String, Object> values;
 
     public Scope(){
         this(null);

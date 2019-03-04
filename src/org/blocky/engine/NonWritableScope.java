@@ -1,5 +1,7 @@
 package org.blocky.engine;
 
+import java.util.Set;
+
 public class NonWritableScope extends Scope{
 
     private boolean locked;
@@ -13,5 +15,10 @@ public class NonWritableScope extends Scope{
         if(locked)
             return false;
         return super.setValue(key, value);
+    }
+
+
+    public Set<String> keys(){
+        return values.keySet();
     }
 }

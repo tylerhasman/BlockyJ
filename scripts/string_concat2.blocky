@@ -1,0 +1,26 @@
+
+function add(one, two):
+
+   return one + two;
+
+end;
+
+string = 1 + 5 + "Test";
+
+print(string);
+
+string = 1 + 5 + add(1, 5) + "Test";
+
+print(string);
+
+string = 1 + 5 + add(1, add(30, 10)) + "Test";
+
+print(string);
+
+string = 1 + 5 + add(add(50, 50), add(30, 10)) + "Test";
+
+print(string);
+
+string = 1 + 5 + add(add(50, 50), add(30, 10)) + "Test" + 10 + 20;
+
+print(string);

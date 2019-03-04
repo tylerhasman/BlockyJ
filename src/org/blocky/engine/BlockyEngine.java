@@ -87,6 +87,10 @@ public class BlockyEngine extends BlockFunction {
 
     public void printOutCompiledCode(){
         printBlock(blocks, 0);
+        for(String key : definedFunctions.keys()){
+            System.out.println(key);
+            printBlock(((BlockDefinedFunction)definedFunctions.getValue(key)).blocks, 0);
+        }
     }
 
 }
