@@ -2,9 +2,10 @@ package org.blocky.engine.blocks;
 
 import org.blocky.engine.Stack;
 
-public class BlockRunDefinedFunction extends Block{
+public class BlockRunDefinedFunction extends Block {
     @Override
     public void execute(Stack stack) throws Exception {
+
         BlockDefinedFunction blockFunction = stack.pop();
 
         if(blockFunction instanceof BlockNativeFunction){

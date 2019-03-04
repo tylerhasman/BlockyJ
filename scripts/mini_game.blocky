@@ -4,22 +4,22 @@ guess = 0;
 
 print("0－9数を選びました。なんだったでしょうか");
 
-function game();
+function guess()
 
     guess = readnumber();
 
-    if guess > thinking;
+    if guess > thinking:
        print("高すぎた");
-    else;
-        if guess < thinking;
+    else
+        if guess < thinking:
             print("低すぎた");
-        else;
+        else
             print("ピンポン！！ It was "+thinking);
         end;
     end;
 
 end;
 
-while guess ! thinking;
-   game();
+while guess ! thinking:
+   guess();
 end;

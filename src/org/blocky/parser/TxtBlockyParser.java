@@ -41,13 +41,13 @@ public class TxtBlockyParser implements BlockyParser {
 
     }
 
-    private Block parseLiteral(Scope scope, Tokenizer stringTokenizer) throws CompilerException {
+    private Block parseLiteral(Scope scope, Tokenizer stringTokenizer, char endCharacter) throws CompilerException {
 
         String token = stringTokenizer.nextTokenSkipWhitespace();
 
         BlockFunction math = new BlockFunction(scope);
 
-        String equation = token + stringTokenizer.nextToken(';');
+        String equation = token + stringTokenizer.nextToken(endCharacter);
 
         parseMath(new Tokenizer(equation), math);
 
@@ -87,7 +87,7 @@ public class TxtBlockyParser implements BlockyParser {
 
                 if(cmd.equals("if")) {
 
-                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer);
+                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer, ':');
 
                     currentFunction.addBlock(condition);
 
@@ -109,7 +109,11 @@ public class TxtBlockyParser implements BlockyParser {
                     functionStack.push(blockIf);
                 }else if(cmd.equals("return")){
 
-                    currentFunction.addBlock(parseLiteral(currentFunction.getScope(), stringTokenizer));
+                    if(currentFunction instanceof BlockFunction){
+                        currentFunction.addBlock(parseLiteral(currentFunction.getScope(), stringTokenizer, ';'));
+                    }else{
+                        throw new CompilerException("Cannot return value in "+currentFunction.getClass().getSimpleName()+" context.");
+                    }
 
                 }else if(cmd.equals("end")) {
 
@@ -120,35 +124,37 @@ public class TxtBlockyParser implements BlockyParser {
                     }
 
                     if (function instanceof BlockDefinedFunction) {
-                        BlockFunction parent = functionStack.peek();
-
-                        parent.getScope().setValue(((BlockDefinedFunction) function).getName(), function);
+                        blockyEngine.declareFunction((BlockDefinedFunction) function);
                     } else {
                         BlockFunction parent = functionStack.peek();
 
                         parent.addBlock(function);
                     }
                 }else if(cmd.equals("while")){
-                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer);
+                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer, ':');
 
                     BlockWhile blockWhile = new BlockWhile(condition, currentFunction.getScope());
 
                     functionStack.push(blockWhile);
                 }else if(cmd.equals("function")){
 
-                    stringTokenizer.skip(1);
-                    String funcName = stringTokenizer.nextWord();
+                    if(currentFunction instanceof BlockyEngine){
+                        stringTokenizer.skip(1);
+                        String funcName = stringTokenizer.nextWord();
 
-                    stringTokenizer.skip(1);
+                        stringTokenizer.skip(1);
 
-                    String[] header = stringTokenizer.nextToken(')').replace(" ", "").split(",");
+                        String[] header = stringTokenizer.nextToken(')').replace(" ", "").split(",");
 
-                    if(header.length == 1 && header[0].isEmpty())
-                        header = new String[0];
+                        if(header.length == 1 && header[0].isEmpty())
+                            header = new String[0];
 
-                    BlockDefinedFunction function = new BlockDefinedFunction(currentFunction.getScope(), funcName, header);
+                        BlockDefinedFunction function = new BlockDefinedFunction(currentFunction.getScope(), funcName, header);
 
-                    functionStack.push(function);
+                        functionStack.push(function);
+                    }else{
+                        throw new CompilerException("Cannot define function inside of "+currentFunction.getClass().getSimpleName());
+                    }
 
                 }else if(Character.isAlphabetic(cmd.charAt(0))){//Variable declaration
 
@@ -157,7 +163,7 @@ public class TxtBlockyParser implements BlockyParser {
                     String operation = stringTokenizer.nextTokenSkipWhitespace();
 
                     if(operation.equals("=")) {
-                        Block block = parseLiteral(currentFunction.getScope(), stringTokenizer);
+                        Block block = parseLiteral(currentFunction.getScope(), stringTokenizer, ';');
 
                         currentFunction.addBlock(block);
                         currentFunction.addBlock(new BlockPushNative(variableName));
@@ -165,7 +171,7 @@ public class TxtBlockyParser implements BlockyParser {
                     }else if(operation.equals("(")){
                         String theRest = stringTokenizer.nextToken(';');
                         //Function!
-                        currentFunction.addBlock(parseLiteral(currentFunction.getScope(), new Tokenizer(variableName+"("+theRest)));
+                        currentFunction.addBlock(parseLiteral(currentFunction.getScope(), new Tokenizer(variableName+"("+theRest), ';'));
                     }else{
                         throw new CompilerException("Unknown assignement operation "+operation);
                     }

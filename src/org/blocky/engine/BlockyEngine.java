@@ -2,6 +2,7 @@ package org.blocky.engine;
 
 import org.blocky.engine.blocks.*;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -11,33 +12,43 @@ public class BlockyEngine extends BlockFunction {
 
     private Stack stack;
 
-    private Scanner input;
+    private OutputStream stdOut;
+    private InputStream stdIn;
+
+    private NonWritableScope definedFunctions;
 
     public BlockyEngine(){
-        super(new Scope());
+        super(new NonWritableScope());
         stack = new Stack();
 
-        input = new Scanner(System.in);
+        stdOut = System.out;
+        stdIn = System.in;
+
+        definedFunctions = (NonWritableScope) getScope().parent();
 
         declareFunction(new BlockNativeFunction(getScope(), "print", new String[] {"string"}) {
             @Override
             public Object executeFunction(Object... params) {
-                System.out.println(params[0]);
-                return null;
-            }
-        });
 
-        declareFunction(new BlockNativeFunction(getScope(), "readline", new String[] {}) {
-            @Override
-            public Object executeFunction(Object... params) {
-                return input.nextLine();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(BlockyEngine.this.stdOut));
+
+                try {
+                    writer.write(params[0].toString());
+                    writer.write("\n");
+                    writer.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
             }
         });
 
         declareFunction(new BlockNativeFunction(getScope(), "readnumber", new String[] {}) {
             @Override
-            public Object executeFunction(Object... params) {
-                return input.nextInt();
+            public Object executeFunction(Object... params) throws IOException {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(BlockyEngine.this.stdIn));
+                return Integer.parseInt(reader.readLine());
             }
         });
 
@@ -50,11 +61,20 @@ public class BlockyEngine extends BlockFunction {
 
     }
 
-    public void declareFunction(BlockNativeFunction nativeFunction){
-        getScope().setValue(nativeFunction.getName(), nativeFunction);
+    public void setStdOut(OutputStream stdOut) {
+        this.stdOut = stdOut;
+    }
+
+    public void setStdIn(InputStream stdIn) {
+        this.stdIn = stdIn;
+    }
+
+    public void declareFunction(BlockDefinedFunction blockDefinedFunction){
+        definedFunctions.setValue(blockDefinedFunction.getName(), blockDefinedFunction);
     }
 
     public void run() throws Exception {
+        definedFunctions.lock();
         execute(stack);
     }
 

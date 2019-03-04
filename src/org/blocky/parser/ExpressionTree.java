@@ -198,7 +198,7 @@ public class ExpressionTree {
                 }
 
                 block.addBlock(new BlockPushNative(name));
-                block.addBlock(new BlockGetVariable(scope));
+                block.addBlock(new BlockGetFunction(scope));
                 block.addBlock(new BlockRunDefinedFunction());
 
             }

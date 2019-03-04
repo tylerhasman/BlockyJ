@@ -8,7 +8,7 @@ import org.blocky.exception.CompilerException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockFunction extends ScopeBlock{
+public class BlockFunction extends ScopeBlock {
 
     public List<Block> blocks;
     private int cursor;

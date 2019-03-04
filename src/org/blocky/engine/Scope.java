@@ -18,6 +18,10 @@ public class Scope {
         values = new HashMap<>();
     }
 
+    public Scope parent(){
+        return parent;
+    }
+
     @Override
     public String toString() {
         if(parent != null){
@@ -39,11 +43,15 @@ public class Scope {
             values.put(key, value);
             return true;
         }else if(parent != null){
-            return parent.setValue(key, value);
+            if(!parent.setValue(key, value)){
+                values.put(key, value);
+                return true;
+            }
         }else{
             values.put(key, value);
             return true;
         }
+        return false;
     }
 
     public Object getValue(String key){
