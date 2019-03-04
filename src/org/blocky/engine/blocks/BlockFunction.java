@@ -23,7 +23,7 @@ public class BlockFunction extends ScopeBlock{
         blocks.add(block);
     }
 
-    protected void printBlock(List<Block> blocks, int tabs){
+    public void printBlock(List<Block> blocks, int tabs){
         String t = "";
         for(int i = 0; i < tabs;i++){
             t += "\t";
@@ -47,6 +47,8 @@ public class BlockFunction extends ScopeBlock{
 
     @Override
     public void execute(Stack stack) throws Exception {
+
+        cursor = 0;
 
         while(cursor < blocks.size()){
             Block block = blocks.get(cursor);

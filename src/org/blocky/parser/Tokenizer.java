@@ -76,6 +76,17 @@ public class Tokenizer {
         return sub;
     }
 
+    public String peekSkipWhitespace(){
+        int index = 0;
+        String sub = peek(1);
+        while(sub.equals(" ") || sub.equals("\t")){
+            index++;
+            sub = peek(1 + index);
+        }
+
+        return sub;
+    }
+
     public String nextWord(){
         String num = "";
 

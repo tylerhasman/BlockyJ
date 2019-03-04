@@ -8,6 +8,7 @@ import org.blocky.exception.CompilerException;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.List;
 
 public class TxtBlockyParser implements BlockyParser {
 
@@ -76,10 +77,11 @@ public class TxtBlockyParser implements BlockyParser {
 
                 if(cmd.isEmpty() || cmd.equals("\n") || cmd.equals(";") || cmd.equals(" ")) {
                     stringTokenizer.skip(1);
-                    if(cmd.equals("\n"))
-                        line++;
                     continue;
                 }
+
+                line++;
+                line++;
 
                 cmd = stringTokenizer.nextWord();
 
@@ -193,7 +195,11 @@ public class TxtBlockyParser implements BlockyParser {
 
         time = System.currentTimeMillis();
 
+        System.out.println("---- PROGRAM OUTPUT ----");
+        Thread.sleep(5);//Allow the compiled code to print out properly
         engine.run();
+
+        System.out.println("---- PROGRAM OUTPUT ----");
 
         System.out.println("Ran in "+(System.currentTimeMillis() - time)+"ms");
 
