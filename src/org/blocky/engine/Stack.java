@@ -13,6 +13,11 @@ public class Stack {
         stack = new ArrayList<>();
     }
 
+    @Override
+    public String toString() {
+        return "Stack{"+stack.toString()+"}";
+    }
+
     public <T> T peek(){
         if(stack.isEmpty()){
             throw new IllegalStateException("Cannot peek stack when it is empty!");

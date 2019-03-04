@@ -75,7 +75,14 @@ public class BlockyEngine extends BlockFunction {
 
     public void run() throws Exception {
         definedFunctions.lock();
-        execute(stack);
+        try{
+            execute(stack);
+        }catch(Exception e){
+            e.printStackTrace();
+            System.err.println("Crash! "+stack.toString());
+            System.err.println("Crash! "+getScope().toString());
+        }
+
     }
 
     public void printOutCompiledCode(){
