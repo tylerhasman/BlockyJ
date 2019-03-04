@@ -85,14 +85,7 @@ public class TxtBlockyParser implements BlockyParser {
 
                 cmd = stringTokenizer.nextWord();
 
-                if(cmd.equals("print")) {
-
-                    BlockPrintOut blockPrintOut = new BlockPrintOut();
-
-                    currentFunction.addBlock(parseLiteral(currentFunction.getScope(), stringTokenizer));
-                    currentFunction.addBlock(new BlockPushNative(1));
-                    currentFunction.addBlock(blockPrintOut);
-                }else if(cmd.equals("if")) {
+                if(cmd.equals("if")) {
 
                     Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer);
 
@@ -155,12 +148,16 @@ public class TxtBlockyParser implements BlockyParser {
 
                     String operation = stringTokenizer.nextTokenSkipWhitespace();
 
-                    if(operation.equals("=")){
+                    if(operation.equals("=")) {
                         Block block = parseLiteral(currentFunction.getScope(), stringTokenizer);
 
                         currentFunction.addBlock(block);
                         currentFunction.addBlock(new BlockPushNative(variableName));
                         currentFunction.addBlock(new BlockSetVariable(currentFunction.getScope()));
+                    }else if(operation.equals("(")){
+                        String theRest = stringTokenizer.nextToken(';');
+                        //Function!
+                        currentFunction.addBlock(parseLiteral(currentFunction.getScope(), new Tokenizer(variableName+"("+theRest)));
                     }else{
                         throw new CompilerException("Unknown assignement operation "+operation);
                     }

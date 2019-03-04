@@ -4,6 +4,7 @@ import org.blocky.engine.Scope;
 import org.blocky.engine.Stack;
 import org.blocky.engine.blocks.*;
 import org.blocky.util.BTreePrinter;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,7 +85,7 @@ public class ExpressionTree {
 
                         while(openBrackets > 0){
 
-                            String withinToken = tokenizer.nextTokenSkipWhitespace();
+                            String withinToken = tokenizer.nextToken(1);
 
                             if(withinToken.equals("(")){
                                 openBrackets++;
@@ -171,7 +172,7 @@ public class ExpressionTree {
                 String tracker = "";
 
                 while(headerTokenizer.hasMoreTokens()){
-                    String token = headerTokenizer.nextTokenSkipWhitespace();
+                    String token = headerTokenizer.nextToken(1);
 
                     if(token.equals("("))
                         brackets++;
@@ -303,7 +304,7 @@ public class ExpressionTree {
     }
 
     public static void main(String[] args){
-        String equation = "50*2+5*5+3/2>50";
+        String equation = "32 * 10 + add(50, sub(20, 20))";
 
         ExpressionTree node = new ExpressionTree(new Tokenizer(equation));
 

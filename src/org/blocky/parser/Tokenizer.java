@@ -106,7 +106,7 @@ public class Tokenizer {
         String sub;
 
         if(i == -1){
-            sub = string.substring(index, string.length());
+            sub = string.substring(index);
             index = string.length();
         }else{
             sub = nextToken(i - index);
