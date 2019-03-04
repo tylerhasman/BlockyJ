@@ -1,0 +1,25 @@
+
+thinking = random(10);
+guess = 0;
+
+print("0－9数を選びました。なんだったでしょうか");
+
+function game();
+
+    guess = readnumber();
+
+    if guess > thinking;
+       print("高すぎた");
+    else;
+        if guess < thinking;
+            print("低すぎた");
+        else;
+            print("ピンポン！！ It was "+thinking);
+        end;
+    end;
+
+end;
+
+while guess ! thinking;
+   game();
+end;

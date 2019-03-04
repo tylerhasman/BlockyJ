@@ -3,11 +3,13 @@ package org.blocky.engine.blocks;
 import org.blocky.engine.Scope;
 import org.blocky.engine.Stack;
 
+import java.util.Collections;
+
 public class BlockWhile extends BlockFunction {
 
-    private BlockCondition blockCondition;
+    private Block blockCondition;
 
-    public BlockWhile(BlockCondition blockCondition, Scope scope) {
+    public BlockWhile(Block blockCondition, Scope scope) {
         super(scope);
         this.blockCondition = blockCondition;
     }

@@ -1,0 +1,6 @@
+
+print("Please enter a line and we will echo it!");
+
+line = readline();
+
+print(line);

@@ -119,16 +119,21 @@ public class TxtBlockyParser implements BlockyParser {
                         throw new CompilerException("Cannot pop context outside of this scope");
                     }
 
-                    if(function instanceof BlockDefinedFunction){
+                    if (function instanceof BlockDefinedFunction) {
                         BlockFunction parent = functionStack.peek();
 
                         parent.getScope().setValue(((BlockDefinedFunction) function).getName(), function);
-                    }else{
+                    } else {
                         BlockFunction parent = functionStack.peek();
 
                         parent.addBlock(function);
                     }
+                }else if(cmd.equals("while")){
+                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer);
 
+                    BlockWhile blockWhile = new BlockWhile(condition, currentFunction.getScope());
+
+                    functionStack.push(blockWhile);
                 }else if(cmd.equals("function")){
 
                     stringTokenizer.skip(1);
@@ -137,6 +142,9 @@ public class TxtBlockyParser implements BlockyParser {
                     stringTokenizer.skip(1);
 
                     String[] header = stringTokenizer.nextToken(')').replace(" ", "").split(",");
+
+                    if(header.length == 1 && header[0].isEmpty())
+                        header = new String[0];
 
                     BlockDefinedFunction function = new BlockDefinedFunction(currentFunction.getScope(), funcName, header);
 
@@ -177,7 +185,7 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/function.blocky");
+        File file = new File("scripts/mini_game.blocky");
 
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);

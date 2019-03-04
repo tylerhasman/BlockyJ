@@ -24,7 +24,7 @@ public class ExpressionTree {
             return 2;
         if(op.equals("+") || op.equals("-"))
             return 1;
-        if(op.equals(">") || op.equals("<"))
+        if(op.equals(">") || op.equals("<") || op.equals("!"))
             return 0;
         throw new IllegalArgumentException("Unknown op "+op);
     }
@@ -188,7 +188,8 @@ public class ExpressionTree {
 
                 }
 
-                header.add(tracker);
+                if(!tracker.isEmpty())
+                    header.add(tracker);
 
                 for(int i = header.size() - 1;i >= 0;i--){
                     ExpressionTree expressionTree = new ExpressionTree(new Tokenizer(header.get(i)));
@@ -231,8 +232,10 @@ public class ExpressionTree {
                 val.addBlock(new BlockMath(BlockMath.TYPE_DIV));
             }else if(op.equals(">")) {
                 val.addBlock(new BlockCompare(BlockCompare.TYPE_GT));
-            }else if(op.equals("<")){
+            }else if(op.equals("<")) {
                 val.addBlock(new BlockCompare(BlockCompare.TYPE_LT));
+            }else if(op.equals("!")){
+                val.addBlock(new BlockCompare(BlockCompare.TYPE_NOT_EQUALS));
             }else{
                 throw new IllegalStateException("Unknown op "+op);
             }
@@ -300,7 +303,7 @@ public class ExpressionTree {
     }
 
     private static boolean isOperator(char c){
-        return c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>';
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '<' || c == '>' || c == '!';
     }
 
     public static void main(String[] args){

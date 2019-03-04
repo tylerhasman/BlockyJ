@@ -26,8 +26,24 @@ public class Scope {
         return values.toString();
     }
 
-    public void setValue(String key, Object value){
-        values.put(key, value);
+    public boolean hasValue(String key){
+        if(parent != null){
+            return parent.hasValue(key) || values.containsKey(key);
+        }
+
+        return values.containsKey(key);
+    }
+
+    public boolean setValue(String key, Object value){
+        if(values.containsKey(key)){
+            values.put(key, value);
+            return true;
+        }else if(parent != null){
+            return parent.setValue(key, value);
+        }else{
+            values.put(key, value);
+            return true;
+        }
     }
 
     public Object getValue(String key){
