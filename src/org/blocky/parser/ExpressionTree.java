@@ -34,6 +34,7 @@ public class ExpressionTree {
             ExpressionTreeNode right = root.right;
 
             int precedent = precedent(root.value);
+
             //The right side of the tree always branches out while the left is leafs
             if(!right.isLeaf()){
                 fixOrder(right);
@@ -219,7 +220,7 @@ public class ExpressionTree {
             val.addBlock(new BlockRunFunction());
 
             if(op.equals("+")){
-                if(node.left.value.startsWith("s") || node.right.value.startsWith("s")){
+                if(!node.left.value.startsWith("i") || !node.right.value.startsWith("i")){
                     val.addBlock(new BlockStringConcat());
                 }else{
                     val.addBlock(new BlockMath(BlockMath.TYPE_ADD));
@@ -307,7 +308,7 @@ public class ExpressionTree {
     }
 
     public static void main(String[] args){
-        String equation = "32 * 10 + add(50, sub(20, 20))";
+        String equation = "2 + 1 + \"Test\"";
 
         ExpressionTree node = new ExpressionTree(new Tokenizer(equation));
 
