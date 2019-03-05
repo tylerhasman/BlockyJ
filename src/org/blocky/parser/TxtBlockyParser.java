@@ -45,7 +45,7 @@ public class TxtBlockyParser implements BlockyParser {
 
         String token = stringTokenizer.nextTokenSkipWhitespace();
 
-        BlockFunction math = new BlockFunction(scope);
+        BlockFunction math = new BlockSubroutine(scope);
 
         String equation = token + stringTokenizer.nextToken(endCharacter);
 
@@ -81,9 +81,13 @@ public class TxtBlockyParser implements BlockyParser {
                 }
 
                 line++;
-                line++;
 
                 cmd = stringTokenizer.nextWord();
+
+                if(cmd.isEmpty()) {
+                    stringTokenizer.skip(1);
+                    continue;
+                }
 
                 if(cmd.equals("if")) {
 
@@ -191,7 +195,7 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/mini_game.blocky");
+        File file = new File("scripts/file_test.blocky");
 
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);

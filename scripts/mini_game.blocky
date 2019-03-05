@@ -14,7 +14,7 @@ function guess()
         if guess < thinking:
             print("低すぎた");
         else
-            print("ピンポン！！ It was "+thinking);
+            print("ピンポン！！ It was " . thinking);
         end;
     end;
 

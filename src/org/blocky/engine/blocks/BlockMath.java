@@ -15,13 +15,8 @@ public class BlockMath extends Block {
     @Override
     public void execute(Stack stack) {
 
-        Object one1 = stack.pop();
-        Object two1 = stack.pop();
-
-        System.out.println("MATH "+one1+" "+two1);
-
-        int one = (int) one1;
-        int two = (int) two1;
+        int one = stack.pop();
+        int two = stack.pop();
 
         if(type == TYPE_ADD){
             stack.push(one + two);

@@ -19,8 +19,19 @@ public class BlockFunction extends ScopeBlock {
         cursor = 0;
     }
 
-    public void addBlock(Block block){
-        blocks.add(block);
+    public void addBlock(Block block) {
+        if (block instanceof BlockSubroutine)
+            blocks.addAll(((BlockSubroutine) block).blocks);
+        else if(block instanceof BlockPushNative) {
+            Object obj = ((BlockPushNative) block).getObj();
+
+            if(obj instanceof BlockSubroutine){
+                blocks.addAll(((BlockSubroutine) obj).blocks);
+            }else{
+                blocks.add(block);
+            }
+        }else
+            blocks.add(block);
     }
 
     public void printBlock(List<Block> blocks, int tabs){

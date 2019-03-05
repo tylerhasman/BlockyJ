@@ -1,6 +1,7 @@
 package org.blocky.engine;
 
 import org.blocky.engine.blocks.*;
+import org.blocky.parser.TxtBlockyParser;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -59,6 +60,43 @@ public class BlockyEngine extends BlockFunction {
             }
         });
 
+        declareFunction(new BlockNativeFunction(getScope(), "file", new String[] {"name"}) {
+            @Override
+            public Object executeFunction(Object... params) {
+                return new File(params[0].toString());
+            }
+        });
+
+        declareFunction(new BlockNativeFunction(getScope(), "readfile", new String[] {"file"}) {
+            @Override
+            public Object executeFunction(Object... params) throws IOException {
+                File file = (File) params[0];
+
+                String content = "";
+
+                try(BufferedReader reader = new BufferedReader(new FileReader(file))){
+                    String line;
+
+                    while((line = reader.readLine()) != null){
+                        content += line + "\n";
+                    }
+                }
+
+                return content;
+            }
+        });
+
+        declareFunction(new BlockNativeFunction(getScope(), "eval", new String[] {"text"}) {
+            @Override
+            public Object executeFunction(Object... params) throws Exception {
+                BlockyEngine blockyEngine = new TxtBlockyParser(params[0].toString()).parse();
+
+                blockyEngine.run();
+
+                return null;
+            }
+        });
+
     }
 
     public void setStdOut(OutputStream stdOut) {
@@ -88,8 +126,9 @@ public class BlockyEngine extends BlockFunction {
     public void printOutCompiledCode(){
         printBlock(blocks, 0);
         for(String key : definedFunctions.keys()){
-            System.out.println(key);
-            printBlock(((BlockDefinedFunction)definedFunctions.getValue(key)).blocks, 0);
+            System.out.println(key+"{");
+            printBlock(((BlockDefinedFunction)definedFunctions.getValue(key)).blocks, 1);
+            System.out.println("}");
         }
     }
 

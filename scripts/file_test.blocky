@@ -1,0 +1,22 @@
+
+file = file("scripts/mini_game.blocky");
+
+content = readfile(file);
+
+function game()
+
+    eval(content);
+
+    print("Finished evaluating");
+
+end;
+
+choice = 1;
+
+while choice ! 0:
+
+    game();
+    print("Do you want to play again? 0 = cancel");
+    choice = readnumber();
+
+end;

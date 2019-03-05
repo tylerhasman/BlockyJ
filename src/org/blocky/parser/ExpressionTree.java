@@ -16,9 +16,7 @@ public class ExpressionTree {
 
     public ExpressionTree(Tokenizer tokenizer){
         root = parse(tokenizer);
-        BTreePrinter.printNode(root);
         fixOrder(root);
-        BTreePrinter.printNode(root);
     }
 
     private int precedent(String op){
@@ -175,8 +173,8 @@ public class ExpressionTree {
         return eval(root, scope);
     }
 
-    private static BlockFunction eval(ExpressionTreeNode node, Scope scope){
-        BlockFunction block = new BlockFunction(scope);
+    private static BlockSubroutine eval(ExpressionTreeNode node, Scope scope){
+        BlockSubroutine block = new BlockSubroutine(scope);
 
         if(!isOperator(node.value.charAt(0))){
 
@@ -250,21 +248,10 @@ public class ExpressionTree {
             left = eval(node.left, scope);
             right = eval(node.right, scope);
 
-            BlockFunction val = new BlockFunction(null);
+            BlockSubroutine val = new BlockSubroutine(null);
 
-            if(op.equals(".")){
-                val.addBlock(new BlockPushNative(left));
-                val.addBlock(new BlockRunFunction());
-                val.addBlock(new BlockPushNative(right));
-                val.addBlock(new BlockRunFunction());
-            }else{
-                val.addBlock(new BlockPushNative(left));
-                val.addBlock(new BlockRunFunction());
-                val.addBlock(new BlockPushNative(right));
-                val.addBlock(new BlockRunFunction());
-            }
-
-
+            val.addBlock(new BlockPushNative(left));
+            val.addBlock(new BlockPushNative(right));
 
             if(op.equals("+")){
                 val.addBlock(new BlockMath(BlockMath.TYPE_ADD));
