@@ -8,8 +8,11 @@ import org.blocky.util.BTreePrinter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ExpressionTree {
+
+    private static final Pattern SIDE_BY_SIDE_STRING_FIXER = Pattern.compile("\\\"[ ]*\\+[ ]*\\\"");
 
     private ExpressionTreeNode root;
 
@@ -227,10 +230,11 @@ public class ExpressionTree {
     public static String fixStringLiterals(String expression){
         StringBuffer buffer = new StringBuffer();
 
-        Tokenizer tokenizer = new Tokenizer(expression);
+        Tokenizer tokenizer = new Tokenizer(SIDE_BY_SIDE_STRING_FIXER.matcher(expression).replaceAll(""));
 
         boolean inside = expression.startsWith("\"");
         boolean justLeftQuote = false;
+        int function = 0;
 
         if(!inside){
             buffer.append('(');
@@ -247,9 +251,25 @@ public class ExpressionTree {
                 justLeftQuote = true;
             }else{
 
-                String token = tokenizer.nextTokenSkipWhitespace();
+                String token = tokenizer.nextToken(1);
 
-                if(token.equals("\"")){
+                if(function <= 0 && token.equals(" "))
+                    continue;
+
+                if(Character.isAlphabetic(token.charAt(0))) {
+                    String word = token + tokenizer.nextWord();
+
+                    buffer.append(word);
+
+                    if (tokenizer.peekIfPossible(1).equals("(")) {
+                        function++;
+                    }
+                }else if(function > 0){
+                    buffer.append(token);
+                    if(token.equals(")")){
+                        function--;
+                    }
+                }else if(token.equals("\"")){
                     buffer.insert(buffer.length()-1, ')');
                     buffer.append('"');
                     inside = true;
@@ -266,7 +286,9 @@ public class ExpressionTree {
 
         }
 
-
+        if(!inside && !justLeftQuote){
+            buffer.append(')');
+        }
 
         return buffer.toString();
     }
@@ -288,8 +310,6 @@ public class ExpressionTree {
 
     public static void main(String[] args) throws Exception {
         String equation = "6 * 3 + 5 + \"TOP\" + 5 + \"Woot\" + 5 * 100 + \"KLED\"";
-
-        System.out.println("Fixed "+fixStringLiterals(equation));
 
         ExpressionTree node = new ExpressionTree(equation);
 

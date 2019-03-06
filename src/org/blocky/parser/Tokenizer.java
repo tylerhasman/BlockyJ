@@ -59,7 +59,7 @@ public class Tokenizer {
 
         while(brackets > 0){
 
-            char nextToken = nextTokenSkipWhitespace().charAt(0);
+            char nextToken = nextToken(1).charAt(0);
 
             if(nextToken == '(')
                 brackets++;
@@ -87,7 +87,7 @@ public class Tokenizer {
 
     public String peek(int width){
         if(index + width > string.length())
-            throw new IndexOutOfBoundsException(index+" + "+width+" > "+string.length());
+            throw new IndexOutOfBoundsException(index+" + "+width+" > "+string.length()+" ("+string+")");
 
         String sub = string.substring(index, index + width);
 

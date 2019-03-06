@@ -5,14 +5,14 @@ function add(one, two):
 
 end;
 
-string = 1 + 5 . "Test";
+string = 1 + 5 + "Test";
 
 print(string);
 
-string = 1 + 5 + add(1, 5) . "Test";
+string = 1 + 5 + add(1, 5) + "Test";
 
 print(string);
 
-string = 1 + 5 + add(1, add(30, 10)) . "Test";
+string = 1 + 5 + add(1, add(30, 10)) + "Test" + 1 + 5 + add(1, add(30, 10)) + "Wow!    "     +       "     It seems to be working!";
 
 print(string);

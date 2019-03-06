@@ -14,12 +14,12 @@ function guess()
         if guess < thinking:
             print("低すぎた");
         else
-            print("ピンポン！");
+            print("ピンポン！"+thinking+"でした");
         end;
     end;
 
 end;
 
-while guess ! thinking:
+while guess != thinking:
    guess();
 end;

@@ -3,8 +3,11 @@ function add(one, two);
    return one + two;
 end;
 
+function concat(one, two);
+   return one + "" + two;
+end;
+
 sum = add(add(add(50,50),10), add(20,add(50, add(add(60, 60), 30))));
 
-sum = 5 - 50;
-
 print(sum);
+print(concat("Should", concat(" be", concat(" 330", "!"))));
