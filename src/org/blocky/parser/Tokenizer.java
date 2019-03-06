@@ -57,14 +57,21 @@ public class Tokenizer {
 
         String insideBrackets = "";
 
+        boolean insideQuotes = false;
+
         while(brackets > 0){
 
             char nextToken = nextToken(1).charAt(0);
 
-            if(nextToken == '(')
-                brackets++;
-            else if(nextToken == ')')
-                brackets--;
+            if(nextToken == '"')
+                insideQuotes = !insideQuotes;
+
+            if(!insideQuotes){
+                if(nextToken == '(')
+                    brackets++;
+                else if(nextToken == ')')
+                    brackets--;
+            }
 
             insideBrackets += nextToken;
         }
