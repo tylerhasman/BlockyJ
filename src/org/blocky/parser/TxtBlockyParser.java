@@ -39,7 +39,7 @@ public class TxtBlockyParser implements BlockyParser {
 
         String equation = token + stringTokenizer.nextToken(endCharacter);
 
-        ExpressionTree expressionTree = new ExpressionTree(new Tokenizer(equation));
+        ExpressionTree expressionTree = new ExpressionTree(equation);
 
         expression.addBlock(expressionTree.eval(expression.getScope()));
 
@@ -187,7 +187,7 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/while.blocky");
+        File file = new File("scripts/function.blocky");
 
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);

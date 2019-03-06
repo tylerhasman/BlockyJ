@@ -111,7 +111,7 @@ public class Tokenizer {
             sub = peek(1 + index);
         }
 
-        return sub;
+        return sub.substring(sub.length()-1);
     }
 
     public String nextWord(){

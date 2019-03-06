@@ -5,10 +5,6 @@ end;
 
 sum = add(add(add(50,50),10), add(20,add(50, add(add(60, 60), 30))));
 
-print("The sum was " + sum);
+sum = 5 - 50;
 
-if sum > 300;
-   print("The sum was greater than 300");
-else;
-   print("The sum was less than or equal to 300");
-end;
+print(sum);
