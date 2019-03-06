@@ -7,8 +7,6 @@ import org.blocky.engine.blocks.*;
 import org.blocky.exception.CompilerException;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
 
 public class TxtBlockyParser implements BlockyParser {
 
@@ -33,25 +31,19 @@ public class TxtBlockyParser implements BlockyParser {
         }
     }
 
-    private void parseMath(Tokenizer tokenizer, BlockFunction top){
-
-        ExpressionTree expressionTree = new ExpressionTree(tokenizer);
-
-        top.addBlock(expressionTree.eval(top.getScope()));
-
-    }
-
-    private Block parseLiteral(Scope scope, Tokenizer stringTokenizer, char endCharacter) throws CompilerException {
+    private Block parseExpression(Scope scope, Tokenizer stringTokenizer, char endCharacter) throws CompilerException {
 
         String token = stringTokenizer.nextTokenSkipWhitespace();
 
-        BlockFunction math = new BlockSubroutine(scope);
+        BlockFunction expression = new BlockSubroutine(scope);
 
         String equation = token + stringTokenizer.nextToken(endCharacter);
 
-        parseMath(new Tokenizer(equation), math);
+        ExpressionTree expressionTree = new ExpressionTree(new Tokenizer(equation));
 
-        return math;
+        expression.addBlock(expressionTree.eval(expression.getScope()));
+
+        return expression;
 
 
     }
@@ -91,7 +83,7 @@ public class TxtBlockyParser implements BlockyParser {
 
                 if(cmd.equals("if")) {
 
-                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer, ':');
+                    Block condition = parseExpression(currentFunction.getScope(), stringTokenizer, ':');
 
                     currentFunction.addBlock(condition);
 
@@ -114,7 +106,7 @@ public class TxtBlockyParser implements BlockyParser {
                 }else if(cmd.equals("return")){
 
                     if(currentFunction instanceof BlockFunction){
-                        currentFunction.addBlock(parseLiteral(currentFunction.getScope(), stringTokenizer, ';'));
+                        currentFunction.addBlock(parseExpression(currentFunction.getScope(), stringTokenizer, ';'));
                     }else{
                         throw new CompilerException("Cannot return value in "+currentFunction.getClass().getSimpleName()+" context.");
                     }
@@ -135,7 +127,7 @@ public class TxtBlockyParser implements BlockyParser {
                         parent.addBlock(function);
                     }
                 }else if(cmd.equals("while")){
-                    Block condition = parseLiteral(currentFunction.getScope(), stringTokenizer, ':');
+                    Block condition = parseExpression(currentFunction.getScope(), stringTokenizer, ':');
 
                     BlockWhile blockWhile = new BlockWhile(condition, currentFunction.getScope());
 
@@ -167,7 +159,7 @@ public class TxtBlockyParser implements BlockyParser {
                     String operation = stringTokenizer.nextTokenSkipWhitespace();
 
                     if(operation.equals("=")) {
-                        Block block = parseLiteral(currentFunction.getScope(), stringTokenizer, ';');
+                        Block block = parseExpression(currentFunction.getScope(), stringTokenizer, ';');
 
                         currentFunction.addBlock(block);
                         currentFunction.addBlock(new BlockPushNative(variableName));
@@ -175,7 +167,7 @@ public class TxtBlockyParser implements BlockyParser {
                     }else if(operation.equals("(")){
                         String theRest = stringTokenizer.nextToken(';');
                         //Function!
-                        currentFunction.addBlock(parseLiteral(currentFunction.getScope(), new Tokenizer(variableName+"("+theRest), ';'));
+                        currentFunction.addBlock(parseExpression(currentFunction.getScope(), new Tokenizer(variableName+"("+theRest), ';'));
                     }else{
                         throw new CompilerException("Unknown assignement operation "+operation);
                     }
@@ -195,7 +187,7 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/file_test.blocky");
+        File file = new File("scripts/while.blocky");
 
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);

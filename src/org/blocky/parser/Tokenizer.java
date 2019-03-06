@@ -19,6 +19,12 @@ public class Tokenizer {
         return index < string.length();
     }
 
+    public void rewind(int width){
+        if(index - width < 0)
+            throw new IndexOutOfBoundsException(index+" - "+width+" < 0");
+        index -= width;
+    }
+
     public void skip(int width){
         if(index + width > string.length())
             throw new IndexOutOfBoundsException(index+" + "+width+" > "+string.length());
@@ -43,6 +49,27 @@ public class Tokenizer {
         index++;
 
         return sub;
+    }
+
+    //This method assumes we are already in brackets!
+    public String parseBrackets(){
+        int brackets = 1;
+
+        String insideBrackets = "";
+
+        while(brackets > 0){
+
+            char nextToken = nextTokenSkipWhitespace().charAt(0);
+
+            if(nextToken == '(')
+                brackets++;
+            else if(nextToken == ')')
+                brackets--;
+
+            insideBrackets += nextToken;
+        }
+
+        return insideBrackets.substring(0, insideBrackets.length()-1);//remove final brackets
     }
 
     public String nextNumber(){
