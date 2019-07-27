@@ -1,0 +1,21 @@
+function createcanvas(frame):
+
+    canvas = native("java.awt.Canvas");
+
+    width  = call(frame, "getWidth");
+    height = call(frame, "getHeight");
+
+    call(canvas, "setSize", width, height);
+    call(frame, "add", canvas);
+
+end;
+
+function createframe(width, height):
+    frame = native("javax.swing.JFrame");
+    call(frame, "setSize", width, height);
+    createcanvas(frame);
+    call(frame, "pack");
+    call(frame, "show");
+    return frame;
+end;
+

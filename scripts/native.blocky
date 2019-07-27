@@ -1,0 +1,14 @@
+function createframe():
+    frame = native("javax.swing.JFrame");
+
+    call(frame, "setSize", 600, 400);
+
+    call(frame, "show");
+
+    return frame;
+end;
+
+frame = createframe();
+
+print(frame);
+

@@ -17,18 +17,32 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public TxtBlockyParser(File file) throws IOException {
-        text = "";
+        text = readFile(file);
+    }
+
+    private static String readFile(File file) throws IOException{
+        String text = "";
         try(FileInputStream fileInputStream = new FileInputStream(file)){
             try(BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream))){
 
                 String line;
 
                 while((line = reader.readLine()) != null){
-                    text += line + "\n";
+
+                    if(line.startsWith("#include")){
+                        String what = line.substring(line.indexOf(' ')+1);
+
+                        text += readFile(new File(what));
+                        System.out.println("Included "+what);
+                    }else{
+                        text += line + "\n";
+                    }
+
                 }
 
             }
         }
+        return text;
     }
 
     private Block parseExpression(Scope scope, Tokenizer stringTokenizer, char endCharacter) throws CompilerException {
@@ -187,7 +201,7 @@ public class TxtBlockyParser implements BlockyParser {
     }
 
     public static void main(String[] args) throws Exception {
-        File file = new File("scripts/function.blocky");
+        File file = new File("scripts/include_test.blocky");
 
 
         TxtBlockyParser txtBlockyParser = new TxtBlockyParser(file);

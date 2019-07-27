@@ -1,0 +1,17 @@
+
+#include scripts/game_framework.blocky
+
+frame = createframe(600, 400);
+
+graphics = call(canvas, "getGraphics");
+
+color = native("java.awt.Color", 0, 0, 0);
+
+while 1 == 1:
+
+width = call(frame, "getWidth");
+height = call(frame, "getHeight");
+
+call(graphics, "setColor", color);
+call(graphics, "fillRect", 0, 0, width, height);
+end;

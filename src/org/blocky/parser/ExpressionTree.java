@@ -201,6 +201,7 @@ public class ExpressionTree {
                 function.addBlock(expressionTree.eval(scope));
             }
 
+            function.addBlock(new BlockPushNative(header.size()));
             function.addBlock(new BlockPushNative(name));
             function.addBlock(new BlockGetFunction(scope));
             function.addBlock(new BlockRunDefinedFunction());

@@ -3,7 +3,10 @@ package org.blocky.engine;
 import org.blocky.engine.blocks.*;
 import org.blocky.parser.TxtBlockyParser;
 
+import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Random;
 
 public class BlockyEngine extends BlockFunction {
@@ -91,6 +94,53 @@ public class BlockyEngine extends BlockFunction {
                 blockyEngine.run();
 
                 return null;
+            }
+        });
+
+        declareFunction(new BlockNativeFunction(getScope(), "call", new String[] {"object", "methodName", "args"}) {
+            @Override
+            public Object executeFunction(Object... params) throws Exception {
+
+                Object obj = params[0];
+                String methodName = params[1].toString();
+
+                for(Method method : obj.getClass().getMethods()){
+                    if(method.getName().equals(methodName)){
+                        if(method.getParameterCount() == params.length - 2){
+                            try{
+                                return method.invoke(obj, Arrays.copyOfRange(params, 2, params.length));
+                            }catch(Exception e){
+                            }
+                        }
+                    }
+                }
+
+                throw new IllegalArgumentException("No such method exists for "+obj+" "+methodName+" "+Arrays.toString(params));
+            }
+        });
+
+        declareFunction(new BlockNativeFunction(getScope(), "native", new String[] {"className", "args"}) {
+            @Override
+            public Object executeFunction(Object... params) throws Exception {
+
+                String className = params[0].toString();
+
+                Class<?> clazz = Class.forName(className);
+
+                Class<?>[] types = new Class[params.length-1];
+
+                for(int i = 1; i < params.length;i++){
+                    Class<?> paramClazz = params[i].getClass();
+
+                    if(paramClazz.equals(Integer.class))
+                        paramClazz = int.class;
+                    if(paramClazz.equals(Boolean.class))
+                        paramClazz = boolean.class;
+
+                    types[i - 1] = paramClazz;
+                }
+
+                return clazz.getConstructor(types).newInstance(Arrays.copyOfRange(params, 1, params.length));
             }
         });
 
