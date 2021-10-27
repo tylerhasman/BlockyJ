@@ -2,19 +2,19 @@
 thinking = random(10);
 guess = 0;
 
-print("0－9数を選びました。なんだったでしょうか");
+print("Guess the number I'm thinking from 0-9");
 
 function guess()
 
     guess = readnumber();
 
     if guess > thinking:
-       print("高すぎた");
+       print("Too high!");
     else
         if guess < thinking:
-            print("低すぎた");
+            print("Too low!");
         else
-            print("ピンポン！"+thinking+"でした");
+            print("You got it！It was "+thinking+".");
         end;
     end;
 
